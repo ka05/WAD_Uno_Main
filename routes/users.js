@@ -16,6 +16,7 @@ module.exports = function(db) {
   // http://miamicoder.com/2014/using-mongodb-and-mongoose-for-user-registration-login-and-logout-in-a-mobile-application/
 
   setUserOnline = function (_userId, _socketId, _token) {
+    console.log("set user online called");
     db.users.update(
       {_id: _userId},
       {'$set': {online: "true", socketId: _socketId, token: _token}},
@@ -79,6 +80,8 @@ module.exports = function(db) {
         //console.log("hash value: " + user.password);
 
         db.users.insert(user, function (err, result) {
+          console.log(user);
+          console.log(result);
           (err === null) ? _actions.success(result) : _actions.error();
         });
 
@@ -98,9 +101,11 @@ module.exports = function(db) {
       "username": _data.username
     }).toArray(function (err, items) {
       if (err) {
+        console.log("error in validatLogin: " + err)
         // error occurred
         _actions.error();
       } else if (items.length <= 0) {
+        console.log("no result")
         // no results
         _actions.error();
       } else if (bcrypt.compareSync(_data.password, items[0].password)) {
@@ -132,23 +137,30 @@ module.exports = function(db) {
       "_id": new ObjectID(token.userId)
     }).toArray(function (err, items) {
       // If there was a result ( userId from token matches one in DB )
-      if (items[0]) {
-        // if the socketId is the same
-        if (items[0].socketId == token.socketId) {
-          var newToken = constructToken(items[0]._id, _data.socketId); // have to update because of socketId
-          setUserOnline(
-            items[0]._id,
-            _data.socketId,
-            newToken
-          ); // need to use socket io conn id);
-          items[0].token = newToken;
-          _actions.success(items[0]);
+      if(items){
+        if (items[0]) {
+          console.log("items[0] here");
+          // if the socketId is the same
+          if (items[0].socketId == token.socketId) {
+            console.log("sockets match");
+            var newToken = constructToken(items[0]._id, _data.socketId); // have to update because of socketId
+            setUserOnline(
+              items[0]._id,
+              _data.socketId,
+              newToken
+            ); // need to use socket io conn id);
+            items[0].token = newToken;
+            _actions.success(items[0]);
+          } else {
+            _actions.error();
+          }
         } else {
           _actions.error();
         }
-      } else {
+      }else {
         _actions.error();
       }
+
 
     });
 

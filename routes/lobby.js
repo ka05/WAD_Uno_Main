@@ -23,6 +23,9 @@ module.exports = function(db) {
       challengerId = _data.challengerId,
       timestamp = Math.floor(new Date() / 1000);
 
+    console.log("send challenge called");
+    console.log(usersChallengedIds);
+
     db.users.find({'_id': new ObjectID(challengerId)}).toArray(function (err, items) {
       var challenger = {
         id: challengerId,
@@ -31,7 +34,7 @@ module.exports = function(db) {
       };
 
       async.mapSeries(usersChallengedIds, function (id, callback) {
-        db.users.find({$query: {'_id': new ObjectID(id)}, $orderby: {timestamp: -1}}).toArray(function (err, res) {
+        db.users.find({$query: {'_id': new ObjectID(id)}}).toArray(function (err, res) {
           if (err) return callback(err);
           callback(null, {
             _id: res[0]._id,
@@ -49,6 +52,7 @@ module.exports = function(db) {
         };
 
         db.challenges.insert(challenge, function (err, result) {
+          console.log("complete err: " + err + " res: " + JSON.stringify(result));
           (err === null) ? _actions.success() : _actions.error();
         });
       });

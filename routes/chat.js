@@ -70,7 +70,8 @@ module.exports = function(db){
       if(err === null && items.length > 0){
         // if the user can be in room given roomId
         var senderUsername = items[0].username;
-
+console.log("_data.roomId: " + _data.roomId);
+console.log("items[0].online: " +items[0].online);
         // they are in lobby chat so they are okay no matter who they are as long as they are loggedIn
         if( (_data.roomId == "1") && (items[0].online == "true") ){
 
@@ -115,6 +116,7 @@ module.exports = function(db){
 
             });
           }
+
         }
       }else{
         _actions.error();
